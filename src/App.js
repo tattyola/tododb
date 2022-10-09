@@ -1,25 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import db from './connectDB';
+import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import CreateTaskForm from "./createTaskForm";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [tasks, setTasks] = useState([]);
+
+    useEffect(() => {
+        const taskColRef = query(collection(db, 'tasks'), orderBy('created', 'desc'));
+        onSnapshot(taskColRef, (snapshot) => {
+            setTasks(snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })));
+        });
+    }, [])
+    console.log(tasks);
+
+    return (
+        <div>
+            <CreateTaskForm/>
+            <ul>
+                {tasks.map(task => (
+                    <li key={task.title}>{task.title}</li>
+                ))}
+            </ul>
+        </div>
+    );
 }
 
 export default App;
